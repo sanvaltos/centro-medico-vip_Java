@@ -17,6 +17,8 @@ public class CentroMedico {
 
     private final FilaDeEspera filaPacientesVip = new FilaDeEspera();
 
+    private int atendidos = 0;
+
     Object lock = new Object();
 
     private final Thread[] medicos;
@@ -44,8 +46,22 @@ public class CentroMedico {
         }
     }
 
-    public FilaDeEspera getFilaVip() {
-        return filaPacientesVip;
+    public Paciente obtenerPacienteVip() throws InterruptedException {
+        return filaPacientesVip.obtenerPaciente();
+    }
+
+
+    public synchronized void registrarAtencion() {
+        atendidos++;
+    }
+
+    public synchronized boolean tocaVIP() {
+        boolean retorno = false;
+        if (atendidos >= 3) {
+            atendidos = 0;
+            retorno = true;
+        }
+        return retorno;
     }
 
 }

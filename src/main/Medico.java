@@ -12,6 +12,8 @@ public class Medico implements Runnable {
 
     private final String nombre;
 
+    Object lock = new Object();
+
     private final int id;
 
     public Medico(CentroMedico centroMedico, String nombre, FilaDeEspera filaPacientes, int id) {
@@ -24,24 +26,38 @@ public class Medico implements Runnable {
 
     @Override
     public void run() {
-        Random random = new Random();
         try {
             while (true) {
-                Paciente paciente = filaPacientes.obtenerPaciente();
-                System.out.println(nombre + " comienza a atender a " + paciente.obtenerNombre());
-
-
-                int tiempoAtencion = random.nextInt(10) + 1;
-                Thread.sleep(tiempoAtencion * 2000);
-
-
-                System.out.println( nombre + " termino con " + paciente.obtenerNombre() + " en " +
-                        tiempoAtencion + " segundos.");
-                
+                if (centroMedico.tocaVIP() || !tengoPacientes() ) {
+                    Paciente paciente = centroMedico.obtenerPacienteVip();
+                    atenderPaciente(paciente);
+                } else {
+                    Paciente paciente = filaPacientes.obtenerPaciente();
+                    atenderPaciente(paciente);
+                    centroMedico.registrarAtencion();
+                }
             }
         } catch (InterruptedException exc) {
             throw new RuntimeException(exc);
         }
+    }
+
+    public void atenderPaciente(Paciente paciente) throws InterruptedException {
+        Random random = new Random();
+        System.out.println(nombre + " comienza a atender a " + paciente.obtenerNombre());
+
+        int tiempoAtencion = random.nextInt(10) + 1;
+        Thread.sleep(tiempoAtencion * 2000);
+
+        System.out.println( nombre + " termino con " + paciente.obtenerNombre() + " en " + tiempoAtencion + " segundos.");
+    }
+
+    public boolean tengoPacientes() {
+        boolean retorno = false;
+        if (filaPacientes.obtenerCantidad() == 0){
+            retorno = true;
+        }
+        return retorno;
     }
 
 }
