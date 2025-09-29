@@ -1,26 +1,23 @@
 package main;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Random;
-import java.util.concurrent.Semaphore;
 
 public class Medico implements Runnable {
     private final CentroMedico centroMedico;
 
     private final FilaDeEspera filaPacientes;
 
+    private int atendidos = 0;
+
     private final String nombre;
 
-    Object lock = new Object();
-
-    private final int id;
+    private final int consultorio;
 
     public Medico(CentroMedico centroMedico, String nombre, FilaDeEspera filaPacientes, int id) {
         this.centroMedico = centroMedico;
         this.nombre = nombre;
         this.filaPacientes = filaPacientes;
-        this.id = id;
+        this.consultorio = id;
     }
 
 
@@ -28,13 +25,31 @@ public class Medico implements Runnable {
     public void run() {
         try {
             while (true) {
-                if (centroMedico.tocaVIP() || !tengoPacientes() ) {
-                    Paciente paciente = centroMedico.obtenerPacienteVip();
+                Paciente paciente = null;
+
+                if (tocaVIP() && centroMedico.hayFilaVip()) {
+                    paciente = centroMedico.obtenerPacienteVip();
+
+                    // 2. Si tengo pacientes en mi fila → atenderlos
+                } else if (tengoPacientes()) {
+                    paciente = filaPacientes.obtenerPaciente();
+                    // 3. Si no tengo pacientes pero hay VIPs → atender VIP
+                }
+                else if (centroMedico.hayFilaVip()) {
+                    paciente = centroMedico.obtenerPacienteVip();
+                    // 4. Si no hay nadie → esperar en mi fila (se bloquea ahí)
+                }
+                else {
+                    paciente = filaPacientes.obtenerPaciente();
+                    // cuando llegue alguien, se despierta aquí
+                }
+
+                if (paciente != null) {
                     atenderPaciente(paciente);
-                } else {
-                    Paciente paciente = filaPacientes.obtenerPaciente();
-                    atenderPaciente(paciente);
-                    centroMedico.registrarAtencion();
+                    if (!paciente.esVip()) {
+                        registrarAtencion();
+                    }
+                    centroMedico.mandarPaciente(paciente);
                 }
             }
         } catch (InterruptedException exc) {
@@ -44,17 +59,38 @@ public class Medico implements Runnable {
 
     public void atenderPaciente(Paciente paciente) throws InterruptedException {
         Random random = new Random();
-        System.out.println(nombre + " comienza a atender a " + paciente.obtenerNombre());
 
+        if (paciente.esVip()) {
+            System.out.println(nombre + " le toca " + paciente.obtenerNombre() + " que es VIP");
+        } else {
+            System.out.println(nombre + " comienza a atender a " + paciente.obtenerNombre() + " en consultorio "
+                    + paciente.obtenerTurno());
+        }
         int tiempoAtencion = random.nextInt(10) + 1;
-        Thread.sleep(tiempoAtencion * 2000);
+
+        Thread.sleep(tiempoAtencion * 1000);
 
         System.out.println( nombre + " termino con " + paciente.obtenerNombre() + " en " + tiempoAtencion + " segundos.");
+
     }
 
     public boolean tengoPacientes() {
-        boolean retorno = false;
+        boolean retorno = true;
         if (filaPacientes.obtenerCantidad() == 0){
+            retorno = false;
+        }
+        return retorno;
+    }
+
+    public synchronized void registrarAtencion() {
+        atendidos++;
+    }
+
+
+    public synchronized boolean tocaVIP() {
+        boolean retorno = false;
+        if (atendidos >= 3) {
+            atendidos = 0;
             retorno = true;
         }
         return retorno;
