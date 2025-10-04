@@ -18,7 +18,7 @@ public class FilaDeEspera {
         return fila.poll();
     }
 
-    public synchronized int obtenerCantidad() {
+    public synchronized int calcularCantidad() {
         return fila.size();
     }
 

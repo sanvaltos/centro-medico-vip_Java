@@ -2,7 +2,7 @@ package main;
 
 public class Cajero implements Runnable {
 
-    private CentroMedico centroMedico;
+    private final CentroMedico centroMedico;
 
     private final int id;
 
@@ -17,6 +17,7 @@ public class Cajero implements Runnable {
             while (true) {
                 Paciente paciente = centroMedico.liberarPaciente();
                 cobrar(paciente);
+                centroMedico.liberarLugar();
             }
         } catch (InterruptedException exc) {
             Thread.currentThread().interrupt();
@@ -24,9 +25,9 @@ public class Cajero implements Runnable {
     }
 
     private void cobrar(Paciente paciente) throws InterruptedException {
-        System.out.println("Cajero " + id + " comienza a cobrar a " + paciente.obtenerNombre());
-        Thread.sleep(1500); // simula tiempo de caja
-        System.out.println("Cajero " + id +  " terminó de cobrar a " + paciente.obtenerNombre());
+        System.out.println("Cajero " + id + " comienza a cobrar a " + paciente.toString());
+        Thread.sleep(2000);
+        System.out.println("Cajero " + id +  " terminó de cobrar a " + paciente.toString());
     }
 
 }

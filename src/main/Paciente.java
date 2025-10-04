@@ -3,20 +3,20 @@ package main;
 public class Paciente {
     private final String nombre;
     private boolean categoriaVip;
-    private Integer consultorio;
+    private Integer turno;
 
     public Paciente(String nombre, boolean categoriaVip, Integer consultorio) {
         this.nombre = nombre;
         this.categoriaVip = categoriaVip;
-        this.consultorio = consultorio;
+        this.turno = consultorio;
     }
 
-    public String obtenerNombre() {
+    public String toString() {
         return nombre;
     }
 
     public int obtenerTurno() {
-        return consultorio;
+        return turno;
     }
 
     public boolean esVip() {

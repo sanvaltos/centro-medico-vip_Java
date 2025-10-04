@@ -97,7 +97,7 @@ public class CentroMedico {
     }
 
     public boolean hayFilaVip() {
-        return filaPacientesVip.obtenerCantidad() > 0;
+        return filaPacientesVip.calcularCantidad() > 0;
     }
 
     public void liberarLugar() {

@@ -61,22 +61,22 @@ public class Medico implements Runnable {
         Random random = new Random();
 
         if (paciente.esVip()) {
-            System.out.println(nombre + " le toca " + paciente.obtenerNombre() + " que es VIP");
+            System.out.println(nombre + " le toca " + paciente.toString() + " que es VIP en consultorio" + consultorio);
         } else {
-            System.out.println(nombre + " comienza a atender a " + paciente.obtenerNombre() + " en consultorio "
-                    + paciente.obtenerTurno());
+            System.out.println(nombre + " comienza a atender a " + paciente.toString() + " en consultorio" + consultorio);
         }
+
         int tiempoAtencion = random.nextInt(10) + 1;
 
         Thread.sleep(tiempoAtencion * 1000);
 
-        System.out.println( nombre + " termino con " + paciente.obtenerNombre() + " en " + tiempoAtencion + " segundos.");
+        System.out.println( nombre + " termino con " + paciente.toString() +  " en " + tiempoAtencion + " segundos.");
 
     }
 
     public boolean tengoPacientes() {
         boolean retorno = true;
-        if (filaPacientes.obtenerCantidad() == 0){
+        if (filaPacientes.calcularCantidad() == 0){
             retorno = false;
         }
         return retorno;
